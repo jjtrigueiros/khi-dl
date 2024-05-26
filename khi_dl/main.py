@@ -73,10 +73,11 @@ class KhiAlbum:
         tt_track_rows = tt_rows[1:-1]
         # tt_footer = tt_rows[-1]
 
-        tt_has_cd_column = bool(tt_header.find(string="CD"))
-        tt_cd_col = 1 if tt_has_cd_column else None
-        tt_number_col = 2 if tt_has_cd_column else 1
-        tt_name_col = 3 if tt_has_cd_column else 2
+        tt_column_names = [col.text for col in tt_header.findChildren("th")]
+        tt_column_map = {col: pos for pos, col in enumerate(tt_column_names)}
+        tt_cd_col = tt_column_map.get("CD", None)
+        tt_number_col = tt_column_map["#"]
+        tt_name_col = tt_column_map["Song Name"]
 
         for track_row in tt_track_rows:
             cells = track_row.find_all("td")
@@ -84,7 +85,9 @@ class KhiAlbum:
                 khi_page=URL(f"{host}{cells[tt_name_col].find('a').get('href')}"),
                 name=cells[tt_name_col].text,
                 number=int(cells[tt_number_col].text.rstrip(".")),
-                disc=int(cells[tt_cd_col].text) if tt_cd_col is not None else None,
+                disc=int(cells[tt_cd_col].text.rstrip("."))
+                if tt_cd_col is not None
+                else None,
             )
 
 
